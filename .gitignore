@@ -1,0 +1,22 @@
+# Maven
+target/
+*.log
+
+# IDEA
+.idea/
+*.iml
+*.iws
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Nexis Data
+data/
+wallet.dat
+blockchain.db

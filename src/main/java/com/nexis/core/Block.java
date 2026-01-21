@@ -14,11 +14,15 @@ public class Block {
     public int nonce;
     public String validator; // Address of the validator who produced this block
     public byte[] validatorSignature; // Signature of the validator
+    public double totalFees;
+    public double blockReward;
 
-    public Block(int index, String previousHash, List<Transaction> transactions) {
+    public Block(int index, String previousHash, List<Transaction> transactions, double totalFees, double blockReward) {
         this.index = index;
         this.previousHash = previousHash;
         this.transactions = transactions;
+        this.totalFees = totalFees;
+        this.blockReward = blockReward;
         // Use a fixed timestamp for the genesis block to ensure deterministic hash
         // across nodes
         this.timestamp = (index == 0) ? 1737180000000L : System.currentTimeMillis();
@@ -36,7 +40,9 @@ public class Block {
                         previousHash +
                         Long.toString(timestamp) +
                         transactionsData.toString() +
-                        Integer.toString(nonce));
+                        Integer.toString(nonce) +
+                        Double.toString(totalFees) +
+                        Double.toString(blockReward));
     }
 
     public void mineBlock(int difficulty) {

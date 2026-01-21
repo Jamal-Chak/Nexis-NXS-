@@ -35,6 +35,13 @@ public class HttpApiServer {
             server.createContext("/api/chain", new ChainHandler());
             server.createContext("/api/mempool", new MempoolHandler());
             server.createContext("/api/stats", new StatsHandler());
+            // Phase 2: Revenue Endpoints
+            server.createContext("/api/revenue", new RevenueHandler());
+            server.createContext("/api/costs", new CostsHandler());
+            // Phase 3: Business Metrics Endpoint
+            server.createContext("/api/business", new BusinessHandler());
+            // Phase 7: Admin Config
+            server.createContext("/api/admin/config", new AdminHandler());
 
             // Serve Dashboard (Static HTML)
             server.createContext("/", new DashboardHandler());
@@ -49,9 +56,29 @@ public class HttpApiServer {
         }
     }
 
+    // Helper to enforce Rate Limits
+    private boolean checkRateLimit(HttpExchange exchange) throws IOException {
+        String apiKey = exchange.getRequestHeaders().getFirst("X-API-KEY");
+        String remoteAddress = exchange.getRemoteAddress().getAddress().getHostAddress();
+        
+        // Use API Key if present, otherwise IP
+        String clientId = (apiKey != null && !apiKey.isEmpty()) ? apiKey : remoteAddress;
+        
+        ApiKeyManager.Tier tier = ApiKeyManager.getTier(apiKey);
+        int limit = ApiKeyManager.getRateLimit(tier);
+        
+        if (!RateLimiter.allowRequest(clientId, limit)) {
+            String error = "{\"error\": \"Rate limit exceeded\", \"tier\": \"" + tier + "\"}";
+            sendResponse(exchange, error.getBytes(), "application/json", 429);
+            return false;
+        }
+        return true;
+    }
+
     private class ChainHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
             String response = gson.toJson(node.getBlockchain().chain);
             sendResponse(exchange, response, "application/json");
         }
@@ -60,6 +87,7 @@ public class HttpApiServer {
     private class MempoolHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
             String response = gson.toJson(node.getBlockchain().mempool);
             sendResponse(exchange, response, "application/json");
         }
@@ -68,6 +96,7 @@ public class HttpApiServer {
     private class StatsHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
             Blockchain chain = node.getBlockchain();
             Map<String, Object> stats = new HashMap<>();
             stats.put("height", chain.chain.size());
@@ -80,10 +109,73 @@ public class HttpApiServer {
             sendResponse(exchange, response, "application/json");
         }
     }
+    
+    private class RevenueHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
+            // Return the entire RevenueTracker object as JSON
+            String response = gson.toJson(node.getBlockchain().revenueTracker);
+            sendResponse(exchange, response, "application/json");
+        }
+    }
+    
+    private class CostsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
+            Map<String, Object> costs = new HashMap<>();
+            // Simulated cost data
+            costs.put("costPerBlock", node.getBlockchain().revenueTracker.estimatedValidatorCostPerBlock);
+            costs.put("currency", "USD (Simulated)");
+            
+            String response = gson.toJson(costs);
+            sendResponse(exchange, response, "application/json");
+        }
+    }
+    
+    private class BusinessHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
+            // Instantiate MetricsEngine on the fly (or could be field)
+            com.nexis.core.MetricsEngine engine = new com.nexis.core.MetricsEngine(node.getBlockchain());
+            Map<String, Object> summary = engine.getBusinessSummary();
+            
+            String response = gson.toJson(summary);
+            sendResponse(exchange, response, "application/json");
+        }
+    }
+    
+    private class AdminHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            // Security: Only localhost or Admin Key (Pending stricter impl)
+            String apiKey = exchange.getRequestHeaders().getFirst("X-API-KEY");
+            if (!"NEXIS_ADMIN_KEY_001".equals(apiKey)) {
+                 sendResponse(exchange, "Unauthorized", "text/plain", 401);
+                 return;
+            }
+            
+            if ("POST".equals(exchange.getRequestMethod())) {
+                 // Simple toggle for MVP (In real app, parse JSON body)
+                 boolean current = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
+                 com.nexis.core.NetworkConfig.getInstance().setPrivateNetwork(!current);
+                 
+                 String msg = "Private Mode Toggled: " + !current;
+                 sendResponse(exchange, msg, "text/plain");
+            } else {
+                 // GET config
+                 boolean isPrivate = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
+                 sendResponse(exchange, "{\"isPrivateNetwork\": " + isPrivate + "}", "application/json");
+            }
+        }
+    }
 
     private class DashboardHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            if (!checkRateLimit(exchange)) return;
             String path = exchange.getRequestURI().getPath();
             if (path.equals("/")) {
                 path = "/index.html";

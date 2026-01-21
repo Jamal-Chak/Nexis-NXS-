@@ -12,15 +12,31 @@ public class Transaction {
     public String transactionId; // Hash of the transaction
     public PublicKey sender; // Senders public key
     public PublicKey recipient; // Recipients public key
+    public String senderAddress; // Sender address (String)
+    public String recipientAddress; // Recipient address (String)
     public double value;
     public double fee;
     public long timeStamp;
     public byte[] signature; // Signature to prevent tampering
 
-    // Constructor:
+    // Constructor with PublicKeys
     public Transaction(PublicKey from, PublicKey to, double value, double fee) {
         this.sender = from;
         this.recipient = to;
+        this.senderAddress = (from != null) ? KeyPairUtil.getAddressFromPublicKey(from) : null;
+        this.recipientAddress = (to != null) ? KeyPairUtil.getAddressFromPublicKey(to) : null;
+        this.value = value;
+        this.fee = fee;
+        this.timeStamp = System.currentTimeMillis();
+        this.transactionId = calculateHash();
+    }
+
+    // Constructor with String Recipient Address (for Treasury/Burn)
+    public Transaction(PublicKey from, String toAddress, double value, double fee) {
+        this.sender = from;
+        this.recipient = null; // We might not know the PK
+        this.senderAddress = (from != null) ? KeyPairUtil.getAddressFromPublicKey(from) : null;
+        this.recipientAddress = toAddress;
         this.value = value;
         this.fee = fee;
         this.timeStamp = System.currentTimeMillis();
@@ -29,13 +45,10 @@ public class Transaction {
 
     // Calculate the transaction hash (ID)
     public String calculateHash() {
-        String senderKey = (sender != null) ? KeyPairUtil.getStringFromKey(sender) : "";
-        String recipientKey = (recipient != null) ? KeyPairUtil.getStringFromKey(recipient) : "";
-
-        // Hash: Sender + Recipient + Value + Fee + Timestamp
+        // Hash: SenderAddr + RecipientAddr + Value + Fee + Timestamp
         return HashUtil.applySha256(
-                senderKey +
-                        recipientKey +
+                (senderAddress != null ? senderAddress : "") +
+                        (recipientAddress != null ? recipientAddress : "") +
                         Double.toString(value) +
                         Double.toString(fee) +
                         Long.toString(timeStamp));
@@ -46,8 +59,8 @@ public class Transaction {
         if (sender == null)
             return; // Coinbase transactions are not signed by a sender
 
-        String data = KeyPairUtil.getStringFromKey(sender) +
-                KeyPairUtil.getStringFromKey(recipient) +
+        String data = senderAddress +
+                recipientAddress +
                 Double.toString(value) +
                 Double.toString(fee) +
                 Long.toString(timeStamp);
@@ -60,8 +73,8 @@ public class Transaction {
         if (sender == null)
             return true; // Coinbase transactions are valid without signature
 
-        String data = KeyPairUtil.getStringFromKey(sender) +
-                KeyPairUtil.getStringFromKey(recipient) +
+        String data = senderAddress +
+                recipientAddress +
                 Double.toString(value) +
                 Double.toString(fee) +
                 Long.toString(timeStamp);

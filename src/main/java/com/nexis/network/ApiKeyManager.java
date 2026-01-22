@@ -32,7 +32,7 @@ public class ApiKeyManager {
                 return Integer.MAX_VALUE; // Unlimited
             case FREE:
             default:
-                return 60; // 60 req/min
+                return 100; // 100 req/min
         }
     }
 }

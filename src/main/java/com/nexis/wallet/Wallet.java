@@ -35,4 +35,7 @@ public class Wallet {
     public String getAddress() {
         return KeyPairUtil.getAddressFromPublicKey(this.publicKey);
     }
+    public String getPublicKeyString() {
+        return KeyPairUtil.getStringFromKey(this.publicKey);
+    }
 }

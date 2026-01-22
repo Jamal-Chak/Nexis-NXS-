@@ -55,6 +55,10 @@ public class Blockchain {
         return chain.get(chain.size() - 1);
     }
 
+    public Block getLastBlock() {
+        return getLatestBlock();
+    }
+
     public void addBlock(Block newBlock) {
         newBlock.previousHash = getLatestBlock().hash;
         newBlock.mineBlock(DIFFICULTY);
@@ -98,12 +102,13 @@ public class Blockchain {
             // Try to find the public key from the coinbase transaction in the block.
             // In updated logic, coinbase might be first item.
             if (!currentBlock.transactions.isEmpty() && currentBlock.transactions.get(0).recipient != null) {
-                 PublicKey validatorKey = currentBlock.transactions.get(0).recipient;
-                 if (!com.nexis.crypto.SignatureUtil.verifyECDSASig(validatorKey, currentBlock.hash,
+                PublicKey validatorKey = currentBlock.transactions.get(0).recipient;
+                if (!com.nexis.crypto.SignatureUtil.verifyECDSASig(validatorKey, currentBlock.hash,
                         currentBlock.validatorSignature)) {
                     System.out.println("Block " + currentBlock.index + " has invalid validator signature");
-                    // return false; // Disabled for now to avoid breaking if coinbase recipient logic changes
-                 }
+                    // return false; // Disabled for now to avoid breaking if coinbase recipient
+                    // logic changes
+                }
             }
         } else {
             // Proof of Work
@@ -131,7 +136,7 @@ public class Blockchain {
     public double getBalance(PublicKey publicKey) {
         return getBalance(KeyPairUtil.getAddressFromPublicKey(publicKey));
     }
-    
+
     public double getTreasuryBalance() {
         return getBalance(TREASURY_ADDRESS);
     }
@@ -248,7 +253,7 @@ public class Blockchain {
         if (getCurrentSupply() + BLOCK_REWARD > MAX_SUPPLY) {
             reward = Math.max(0, MAX_SUPPLY - getCurrentSupply());
         }
-        
+
         // 3. Calculate Treasury Share
         double totalPot = reward + totalFees;
         double treasuryShare = totalPot * TREASURY_PERCENTAGE;
@@ -259,12 +264,12 @@ public class Blockchain {
 
         // 5. Create Transactions
         List<Transaction> blockTransactions = new ArrayList<>();
-        
+
         // Coinbase for Miner
         Transaction coinbaseTx = new Transaction(null, minerAddress, minerShare, 0);
         coinbaseTx.transactionId = coinbaseTx.calculateHash(); // Recalculate hash
         blockTransactions.add(coinbaseTx);
-        
+
         // Treasury Transaction (if share > 0)
         if (treasuryShare > 0) {
             Transaction treasuryTx = new Transaction(null, TREASURY_ADDRESS, treasuryShare, 0);
@@ -285,7 +290,7 @@ public class Blockchain {
     // PoS version of mining
     public void mineMempoolPoS(com.nexis.wallet.Wallet validatorWallet) {
         String validatorAddr = validatorWallet.getAddress();
-        
+
         // Enforce Permissioned Mining (Phase 7)
         if (!AccessControlManager.isValidatorAllowed(validatorAddr)) {
             System.err.println("Mining Blocked: Validator " + validatorAddr + " is not authorized.");
@@ -313,12 +318,12 @@ public class Blockchain {
         revenueTracker.recordBlockRevenue(System.currentTimeMillis(), totalFees, reward, mempool.size());
 
         List<Transaction> blockTransactions = new ArrayList<>();
-        
+
         // Coinbase for Validator
         Transaction coinbaseTx = new Transaction(null, validatorWallet.publicKey, minerShare, 0);
         coinbaseTx.transactionId = coinbaseTx.calculateHash();
         blockTransactions.add(coinbaseTx);
-        
+
         // Treasury Transaction
         if (treasuryShare > 0) {
             Transaction treasuryTx = new Transaction(null, TREASURY_ADDRESS, treasuryShare, 0);
@@ -343,6 +348,53 @@ public class Blockchain {
 
     public void broadcastLatestBlock() {
         // This will be called by Node to broadcast after mining
+    }
+
+    // --- PROOF OF STAKE ---
+
+    public void stake(PublicKey publicKey, double amount) {
+        String address = KeyPairUtil.getAddressFromPublicKey(publicKey);
+        double balance = getBalance(publicKey);
+
+        if (balance < amount) {
+            throw new RuntimeException(
+                    "Insufficient balance to stake. Balance: " + balance + ", Attempting: " + amount);
+        }
+
+        if (amount <= 0) {
+            throw new RuntimeException("Stake amount must be positive");
+        }
+
+        double currentStake = stakes.getOrDefault(address, 0.0);
+        stakes.put(address, currentStake + amount);
+
+        System.out.println("Staked " + amount + " NXS. Total stake for " + address + ": " + stakes.get(address));
+    }
+
+    public String selectValidator() {
+        if (stakes.isEmpty()) {
+            return null;
+        }
+
+        // Calculate total stake
+        double totalStake = 0;
+        for (double stake : stakes.values()) {
+            totalStake += stake;
+        }
+
+        // Weighted random selection based on stake
+        double random = Math.random() * totalStake;
+        double cumulative = 0;
+
+        for (Map.Entry<String, Double> entry : stakes.entrySet()) {
+            cumulative += entry.getValue();
+            if (random <= cumulative) {
+                return entry.getKey();
+            }
+        }
+
+        // Fallback: return first validator (should never reach here)
+        return stakes.keySet().iterator().next();
     }
 
     // --- GOVERNANCE ---

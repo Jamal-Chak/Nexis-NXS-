@@ -60,13 +60,13 @@ public class HttpApiServer {
     private boolean checkRateLimit(HttpExchange exchange) throws IOException {
         String apiKey = exchange.getRequestHeaders().getFirst("X-API-KEY");
         String remoteAddress = exchange.getRemoteAddress().getAddress().getHostAddress();
-        
+
         // Use API Key if present, otherwise IP
         String clientId = (apiKey != null && !apiKey.isEmpty()) ? apiKey : remoteAddress;
-        
+
         ApiKeyManager.Tier tier = ApiKeyManager.getTier(apiKey);
         int limit = ApiKeyManager.getRateLimit(tier);
-        
+
         if (!RateLimiter.allowRequest(clientId, limit)) {
             String error = "{\"error\": \"Rate limit exceeded\", \"tier\": \"" + tier + "\"}";
             sendResponse(exchange, error.getBytes(), "application/json", 429);
@@ -78,7 +78,8 @@ public class HttpApiServer {
     private class ChainHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             String response = gson.toJson(node.getBlockchain().chain);
             sendResponse(exchange, response, "application/json");
         }
@@ -87,7 +88,8 @@ public class HttpApiServer {
     private class MempoolHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             String response = gson.toJson(node.getBlockchain().mempool);
             sendResponse(exchange, response, "application/json");
         }
@@ -96,7 +98,8 @@ public class HttpApiServer {
     private class StatsHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             Blockchain chain = node.getBlockchain();
             Map<String, Object> stats = new HashMap<>();
             stats.put("height", chain.chain.size());
@@ -109,65 +112,68 @@ public class HttpApiServer {
             sendResponse(exchange, response, "application/json");
         }
     }
-    
+
     private class RevenueHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             // Return the entire RevenueTracker object as JSON
             String response = gson.toJson(node.getBlockchain().revenueTracker);
             sendResponse(exchange, response, "application/json");
         }
     }
-    
+
     private class CostsHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             Map<String, Object> costs = new HashMap<>();
             // Simulated cost data
             costs.put("costPerBlock", node.getBlockchain().revenueTracker.estimatedValidatorCostPerBlock);
             costs.put("currency", "USD (Simulated)");
-            
+
             String response = gson.toJson(costs);
             sendResponse(exchange, response, "application/json");
         }
     }
-    
+
     private class BusinessHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             // Instantiate MetricsEngine on the fly (or could be field)
             com.nexis.core.MetricsEngine engine = new com.nexis.core.MetricsEngine(node.getBlockchain());
             Map<String, Object> summary = engine.getBusinessSummary();
-            
+
             String response = gson.toJson(summary);
             sendResponse(exchange, response, "application/json");
         }
     }
-    
+
     private class AdminHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
             // Security: Only localhost or Admin Key (Pending stricter impl)
             String apiKey = exchange.getRequestHeaders().getFirst("X-API-KEY");
             if (!"NEXIS_ADMIN_KEY_001".equals(apiKey)) {
-                 sendResponse(exchange, "Unauthorized", "text/plain", 401);
-                 return;
+                sendResponse(exchange, "Unauthorized", "text/plain", 401);
+                return;
             }
-            
+
             if ("POST".equals(exchange.getRequestMethod())) {
-                 // Simple toggle for MVP (In real app, parse JSON body)
-                 boolean current = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
-                 com.nexis.core.NetworkConfig.getInstance().setPrivateNetwork(!current);
-                 
-                 String msg = "Private Mode Toggled: " + !current;
-                 sendResponse(exchange, msg, "text/plain");
+                // Simple toggle for MVP (In real app, parse JSON body)
+                boolean current = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
+                com.nexis.core.NetworkConfig.getInstance().setPrivateNetwork(!current);
+
+                String msg = "Private Mode Toggled: " + !current;
+                sendResponse(exchange, msg, "text/plain");
             } else {
-                 // GET config
-                 boolean isPrivate = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
-                 sendResponse(exchange, "{\"isPrivateNetwork\": " + isPrivate + "}", "application/json");
+                // GET config
+                boolean isPrivate = com.nexis.core.NetworkConfig.getInstance().isPrivateNetwork();
+                sendResponse(exchange, "{\"isPrivateNetwork\": " + isPrivate + "}", "application/json");
             }
         }
     }
@@ -175,7 +181,8 @@ public class HttpApiServer {
     private class DashboardHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
-            if (!checkRateLimit(exchange)) return;
+            if (!checkRateLimit(exchange))
+                return;
             String path = exchange.getRequestURI().getPath();
             if (path.equals("/")) {
                 path = "/index.html";
@@ -217,9 +224,19 @@ public class HttpApiServer {
     }
 
     private void sendResponse(HttpExchange exchange, byte[] content, String contentType) throws IOException {
+        sendResponse(exchange, content, contentType, 200);
+    }
+
+    private void sendResponse(HttpExchange exchange, String response, String contentType, int statusCode)
+            throws IOException {
+        sendResponse(exchange, response.getBytes(), contentType, statusCode);
+    }
+
+    private void sendResponse(HttpExchange exchange, byte[] content, String contentType, int statusCode)
+            throws IOException {
         exchange.getResponseHeaders().set("Content-Type", contentType);
         exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-        exchange.sendResponseHeaders(200, content.length);
+        exchange.sendResponseHeaders(statusCode, content.length);
         try (OutputStream os = exchange.getResponseBody()) {
             os.write(content);
         }

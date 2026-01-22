@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
     <div class="dashboard-container">
         <!-- Sidebar -->
@@ -17,11 +19,12 @@
                 <span class="badge">LIVE</span>
             </div>
             <nav>
-                <a href="#" class="active">Overview</a>
-                <a href="#">Network Health</a>
-                <a href="#">Validators</a>
-                <a href="#">Treasury</a>
-                <a href="#">Governance</a>
+                <a href="#" data-view="view-overview" class="nav-link active">Overview</a>
+                <a href="#" data-view="view-health" class="nav-link">Network Health</a>
+                <a href="#" data-view="view-validators" class="nav-link">Validators</a>
+                <a href="#" data-view="view-treasury" class="nav-link">Treasury</a>
+                <a href="#" data-view="view-governance" class="nav-link">Governance</a>
+                <a href="#" data-view="view-studio" class="nav-link">Studio</a>
             </nav>
             <div class="node-info">
                 <p id="node-port">Port: 8000</p>
@@ -37,75 +40,172 @@
                 <div class="last-updated">Updated: <span id="last-updated-time">Now</span></div>
             </header>
 
-            <!-- KPI Grid -->
-            <div class="kpi-grid">
-                <div class="card kpi-card">
-                    <h3>Total Revenue</h3>
-                    <div class="value" id="kpi-revenue">0.00 NXS</div>
-                    <div class="subtext">Fees + Rewards (Lifetime)</div>
-                </div>
-                <div class="card kpi-card">
-                    <h3>Active Wallets</h3>
-                    <div class="value" id="kpi-wallets">0</div>
-                    <div class="subtext">Unique Participants</div>
-                </div>
-                <div class="card kpi-card">
-                    <h3>Avg Tx Fee</h3>
-                    <div class="value" id="kpi-avg-fee">0.00 NXS</div>
-                    <div class="subtext">Per Transaction</div>
-                </div>
-                <div class="card kpi-card">
-                    <h3>Treasury Balance</h3>
-                    <div class="value" id="kpi-treasury">0.00 NXS</div>
-                    <div class="subtext">10% of Block Rewards</div>
-                </div>
-            </div>
-
-            <!-- Charts Row -->
-            <div class="charts-grid">
-                <div class="card chart-card">
-                    <h3>Daily Revenue Trend</h3>
-                    <canvas id="revenueChart"></canvas>
-                </div>
-                <div class="card chart-card">
-                    <h3>Network Load & Difficulty</h3>
-                    <canvas id="loadChart"></canvas>
-                </div>
-            </div>
-
-            <!-- Bottom Panels -->
-            <div class="panels-grid">
-                <div class="card">
-                    <h3>Validator Profitability (Simulated)</h3>
-                    <table class="data-table">
-                        <tr>
-                            <td>Block Reward</td>
-                            <td class="text-right">50.00 NXS</td>
-                        </tr>
-                        <tr>
-                            <td>Est. Cost Per Block</td>
-                            <td class="text-right" id="val-cost">$0.05</td>
-                        </tr>
-                        <tr>
-                            <td>Avg Fee Income</td>
-                            <td class="text-right" id="val-fees">0.00 NXS</td>
-                        </tr>
-                        <tr class="highlight">
-                            <td>Net Margin</td>
-                            <td class="text-right success" id="val-margin">+99%</td>
-                        </tr>
-                    </table>
-                </div>
-
-                <div class="card">
-                    <h3>Recent Blocks</h3>
-                    <div id="blocks-list" class="scroll-list">
-                        <!-- Populated by JS -->
+            <!-- Views Container -->
+            <div id="views-container">
+                <!-- Overview View -->
+                <section id="view-overview" class="view active">
+                    <!-- KPI Grid -->
+                    <div class="kpi-grid">
+                        <div class="card kpi-card">
+                            <h3>Total Revenue</h3>
+                            <div class="value" id="kpi-revenue">0.00 NXS</div>
+                            <div class="subtext">Fees + Rewards (Lifetime)</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <h3>Active Wallets</h3>
+                            <div class="value" id="kpi-wallets">0</div>
+                            <div class="subtext">Unique Participants</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <h3>Avg Tx Fee</h3>
+                            <div class="value" id="kpi-avg-fee">0.00 NXS</div>
+                            <div class="subtext">Per Transaction</div>
+                        </div>
+                        <div class="card kpi-card">
+                            <h3>Treasury Balance</h3>
+                            <div class="value" id="kpi-treasury">0.00 NXS</div>
+                            <div class="subtext">10% of Block Rewards</div>
+                        </div>
                     </div>
-                </div>
+
+                    <!-- Charts Row -->
+                    <div class="charts-grid">
+                        <div class="card chart-card">
+                            <h3>Daily Revenue Trend</h3>
+                            <canvas id="revenueChart"></canvas>
+                        </div>
+                        <div class="card chart-card">
+                            <h3>Network Load & Difficulty</h3>
+                            <canvas id="loadChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Panels -->
+                    <div class="panels-grid">
+                        <div class="card">
+                            <h3>Validator Profitability (Simulated)</h3>
+                            <table class="data-table">
+                                <tr>
+                                    <td>Block Reward</td>
+                                    <td class="text-right">50.00 NXS</td>
+                                </tr>
+                                <tr>
+                                    <td>Est. Cost Per Block</td>
+                                    <td class="text-right" id="val-cost">$0.05</td>
+                                </tr>
+                                <tr>
+                                    <td>Avg Fee Income</td>
+                                    <td class="text-right" id="val-fees">0.00 NXS</td>
+                                </tr>
+                                <tr class="highlight">
+                                    <td>Net Margin</td>
+                                    <td class="text-right success" id="val-margin">+99%</td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div class="card">
+                            <h3>Recent Blocks</h3>
+                            <div id="blocks-list" class="scroll-list">
+                                <!-- Populated by JS -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Network Health View -->
+                <section id="view-health" class="view">
+                    <div class="card">
+                        <h3>Network Status</h3>
+                        <p class="text-muted">System performs optimally. All nodes synced.</p>
+                        <div class="status-grid" style="margin-top: 20px; display: grid; gap: 20px;">
+                            <div class="metric-item">
+                                <label>Uptime</label>
+                                <div class="value">99.99%</div>
+                            </div>
+                            <div class="metric-item">
+                                <label>Latency</label>
+                                <div class="value">45ms</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Validators View -->
+                <section id="view-validators" class="view">
+                    <div class="card">
+                        <h3>Active Validators</h3>
+                        <p class="text-muted">Top 20 validators by stake.</p>
+                        <div style="padding: 20px; text-align: center; color: var(--text-muted);">
+                            Coming Soon: Validator Staking Dashboard
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Treasury View -->
+                <section id="view-treasury" class="view">
+                    <div class="card">
+                        <h3>Community Treasury</h3>
+                        <div class="value" style="font-size: 2rem; margin: 20px 0;">0.00 NXS</div>
+                        <p class="text-muted">Funds allocated for ecosystem development.</p>
+                    </div>
+                </section>
+
+                <!-- Governance View -->
+                <section id="view-governance" class="view">
+                    <div class="card">
+                        <h3>Governance Proposals</h3>
+                        <p class="text-muted">No active proposals.</p>
+                        <button
+                            style="margin-top: 20px; background: var(--primary-gradient); border: none; padding: 10px 20px; border-radius: 8px; color: white;">Create
+                            Proposal</button>
+                    </div>
+                </section>
+
+                <!-- Studio View -->
+                <section id="view-studio" class="view">
+                    <div class="card" style="height: 100%; min-height: 500px; display: flex; flex-direction: column;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h3>Smart Contract Studio</h3>
+                            <div class="actions">
+                                <button class="btn-secondary" onclick="clearEditor()">Clear</button>
+                                <button class="btn-primary" onclick="deployContract()">Deploy to Mainnet</button>
+                            </div>
+                        </div>
+
+                        <div class="editor-container">
+                            <div class="line-numbers">
+                                1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12<br>13<br>14<br>15</div>
+                            <textarea id="code-editor" spellcheck="false">
+contract Token {
+    string public name = "MyToken";
+    string public symbol = "MTK";
+    uint256 public totalSupply = 1000000;
+
+    mapping(address => uint256) balances;
+
+    constructor() {
+        balances[msg.sender] = totalSupply;
+    }
+
+    function transfer(address to, uint256 amount) public {
+        require(balances[msg.sender] >= amount, "Insufficient balance");
+        balances[msg.sender] -= amount;
+        balances[to] += amount;
+    }
+}</textarea>
+                        </div>
+
+                        <div id="deploy-output" class="console-output" style="display:none; margin-top: 20px;">
+                            <!-- Output logs will appear here -->
+                        </div>
+                    </div>
+                </section>
             </div>
         </main>
     </div>
     <script src="app.js"></script>
 </body>
+
 </html>

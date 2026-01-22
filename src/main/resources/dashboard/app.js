@@ -2,9 +2,33 @@ const REFRESH_RATE = 5000;
 
 document.addEventListener('DOMContentLoaded', () => {
     initCharts();
+    setupNavigation();
     fetchData();
     setInterval(fetchData, REFRESH_RATE);
 });
+
+function setupNavigation() {
+    const navLinks = document.querySelectorAll('.nav-link');
+    const views = document.querySelectorAll('.view');
+
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // Remove active class from all
+            navLinks.forEach(l => l.classList.remove('active'));
+            views.forEach(v => v.classList.remove('active'));
+
+            // Add active to clicked
+            link.classList.add('active');
+
+            // Show target view
+            const viewId = link.getAttribute('data-view');
+            const targetView = document.getElementById(viewId);
+            if (targetView) targetView.classList.add('active');
+        });
+    });
+}
 
 let revenueChart, loadChart;
 
@@ -138,4 +162,31 @@ function updateLoadChart(loadPercent) {
         loadChart.data.datasets[0].data.shift();
     }
     loadChart.update();
+}
+
+// Studio Functions
+function clearEditor() {
+    document.getElementById('code-editor').value = '';
+    document.getElementById('deploy-output').style.display = 'none';
+}
+
+function deployContract() {
+    const code = document.getElementById('code-editor').value;
+    if (!code.trim()) {
+        alert("Please write some code first!");
+        return;
+    }
+
+    const output = document.getElementById('deploy-output');
+    output.style.display = 'block';
+    output.innerHTML = '> Compiling Solidity v0.8.20...<br>> Optimizing bytecode...';
+
+    setTimeout(() => {
+        output.innerHTML += '<br>> Uploading to Nexis Mainnet...';
+
+        setTimeout(() => {
+            const txHash = '0x' + Math.random().toString(16).substr(2, 40);
+            output.innerHTML += `<br><br><span style="color: #00ff9d">✓ Deployment Successful!</span><br>Contract Address: <span style="color: #00f2ff">0x71C7656EC7ab88b...${Math.random().toString(16).substr(2, 4)}</span><br>Transaction Hash: <a href="#" style="color: #7000ff">${txHash}</a>`;
+        }, 1500);
+    }, 1000);
 }

@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexis Network | Enterprise Layer-1 Blockchain</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <nav class="navbar">
+        <div class="logo">
+            <span class="logo-icon">N</span>
+            NEXIS
+        </div>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#developers">Developers</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#roadmap">Roadmap</a>
+        </div>
+        <button class="btn btn-primary">Launch Console</button>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <span class="pill">🚀 Mainnet Alpha Live</span>
+            <h1>The Future of <br><span class="gradient-text">Decentralized Scale</span></h1>
+            <p>Nexis is a high-performance Layer-1 blockchain designed for enterprise scalability, instant finality, and
+                zero-knowledge privacy.</p>
+            <div class="cta-group">
+                <button class="btn btn-primary">Start Building</button>
+                <button class="btn btn-secondary">Read Whitepaper</button>
+            </div>
+            <div class="stats-row">
+                <div class="stat">
+                    <span class="val">10k+</span>
+                    <span class="label">TPS</span>
+                </div>
+                <div class="stat">
+                    <span class="val">
+                        < 1s</span>
+                            <span class="label">Latency</span>
+                </div>
+                <div class="stat">
+                    <span class="val">$0.001</span>
+                    <span class="label">Avg Fee</span>
+                </div>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="glass-card main-card">
+                <div class="card-header">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <div class="code-block">
+                    <span class="keyword">const</span> <span class="var">nexis</span> = <span
+                        class="keyword">require</span>(<span class="str">'nexis-sdk'</span>);<br><br>
+                    <span class="comment">// Deploy Smart Contract</span><br>
+                    <span class="keyword">await</span> nexis.<span class="func">deploy</span>({<br>
+                    &nbsp;&nbsp;network: <span class="str">'mainnet'</span>,<br>
+                    &nbsp;&nbsp;contract: <span class="str">'PaymentChannel'</span>,<br>
+                    &nbsp;&nbsp;privacy: <span class="keyword">true</span><br>
+                    });<br><br>
+                    <span class="console">✓ Contract Deployed: 0x7f...3a9</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="features" class="features">
+        <h2>Built for <span class="gradient-text">Performance</span></h2>
+        <div class="feature-grid">
+            <div class="glass-card feature">
+                <i class="fa-solid fa-bolt"></i>
+                <h3>Instant Finality</h3>
+                <p>Transactions are confirmed in milliseconds, not minutes. Perfect for payments and HFT.</p>
+            </div>
+            <div class="glass-card feature">
+                <i class="fa-solid fa-shield-halved"></i>
+                <h3>Enterprise Security</h3>
+                <p>Quantum-resistant cryptography standards ensuring your data remains immersive and secure.</p>
+            </div>
+            <div class="glass-card feature">
+                <i class="fa-solid fa-code"></i>
+                <h3>Developer First</h3>
+                <p>Native SDKs for Java, Python, and JS. Zero learning curve for Web2 developers.</p>
+            </div>
+        </div>
+    </section>
+
+    <section id="pricing" class="pricing">
+        <h2>Simple, Transparent <span class="gradient-text">Pricing</span></h2>
+        <p class="subtitle">Start for free, scale as you grow. Pay only for what you use.</p>
+
+        <div class="pricing-grid">
+            <!-- Free Tier -->
+            <div class="glass-card price-card">
+                <div class="tier-name">Developer</div>
+                <div class="price">$0<span>/mo</span></div>
+                <p class="desc">Perfect for side projects and learning.</p>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> 100 Req/min</li>
+                    <li><i class="fa-solid fa-check"></i> Public Node Access</li>
+                    <li><i class="fa-solid fa-check"></i> Community Support</li>
+                    <li><i class="fa-solid fa-check"></i> Testnet Access</li>
+                </ul>
+                <button class="btn btn-secondary full-width">Get API Key</button>
+            </div>
+
+            <!-- Pro Tier -->
+            <div class="glass-card price-card featured">
+                <div class="popular-tag">Most Popular</div>
+                <div class="tier-name">Startup</div>
+                <div class="price">$49<span>/mo</span></div>
+                <p class="desc">For production applications.</p>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> 1,000 Req/min</li>
+                    <li><i class="fa-solid fa-check"></i> Dedicated Gateway</li>
+                    <li><i class="fa-solid fa-check"></i> Email Support</li>
+                    <li><i class="fa-solid fa-check"></i> 99.9% SLA</li>
+                </ul>
+                <button class="btn btn-primary full-width">Subscribe</button>
+            </div>
+
+            <!-- Enterprise Tier -->
+            <div class="glass-card price-card">
+                <div class="tier-name">Enterprise</div>
+                <div class="price">$499<span>/mo</span></div>
+                <p class="desc">For high-scale organizations.</p>
+                <ul class="features-list">
+                    <li><i class="fa-solid fa-check"></i> Unlimited Req/min</li>
+                    <li><i class="fa-solid fa-check"></i> Private Side-Chain</li>
+                    <li><i class="fa-solid fa-check"></i> 24/7 Priority Support</li>
+                    <li><i class="fa-solid fa-check"></i> Custom SLA</li>
+                </ul>
+                <button class="btn btn-secondary full-width">Contact Sales</button>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-col">
+                <h3>NEXIS</h3>
+                <p>The next generation layer-1 blockchain.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Product</h4>
+                <a href="#">Explorer</a>
+                <a href="#">Wallet</a>
+                <a href="#">Bridge</a>
+            </div>
+            <div class="footer-col">
+                <h4>Resources</h4>
+                <a href="#">Documentation</a>
+                <a href="#">Whitepaper</a>
+                <a href="#">Status</a>
+            </div>
+            <div class="footer-col">
+                <h4>Social</h4>
+                <a href="#">Twitter</a>
+                <a href="#">Discord</a>
+                <a href="#">GitHub</a>
+            </div>
+        </div>
+        <div class="copyright">
+            &copy; 2026 Nexis Network Foundation. All rights reserved.
+        </div>
+    </footer>
+</body>
+
+</html>
